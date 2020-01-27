@@ -12,6 +12,7 @@ namespace wow.tools.api.Models
             install,
             root,
             download,
+            size,
         }
 
         internal ManifestType type;

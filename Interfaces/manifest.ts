@@ -6,6 +6,7 @@ export enum Manifest {
     install,
     root,
     download,
+    size,
     internal,
     string,
     string,
