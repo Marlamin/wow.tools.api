@@ -1,9 +1,9 @@
 ﻿/* Auto Generated */
 
-import { Branch } from "./branch";
+import { Project } from "./project";
 import { Environment } from "./environment";
 
 export interface Product {
-    branch: Branch;
+    project: Project;
     environment: Environment;
 }

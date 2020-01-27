@@ -1,6 +1,6 @@
 ﻿/* Auto Generated */
 
-export enum Branch {
+export enum Project {
     classic,
     retail,
 }

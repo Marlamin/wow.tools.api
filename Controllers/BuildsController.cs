@@ -17,10 +17,10 @@ namespace wow.tools.api.Controllers
         public ActionResult<Build> Get(Version version) => throw new NotImplementedException();
 
         [HttpGet("{branch}")]
-        public BuildsResponse List(Branch branch) => throw new NotImplementedException();
+        public BuildsResponse List(Project branch) => throw new NotImplementedException();
 
         [HttpGet("{branch}/{environment}")]
-        public BuildsResponse List(Branch branch, Models.Environment environment) => throw new NotImplementedException();
+        public BuildsResponse List(Project branch, Models.Environment environment) => throw new NotImplementedException();
 
         [HttpGet("current")]
         public BuildsResponse Current() => throw new NotImplementedException();
