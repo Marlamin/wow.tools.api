@@ -13,7 +13,10 @@ namespace wow.tools.api.Controllers
     [Route("[controller]")]
     public class TACTKeysController : ControllerBase
     {
-        [HttpGet("/tactkeys/list")]
+        /// <summary>
+        /// Lists all currently known TACTKeys.
+        /// </summary>
+        [HttpGet("/tactkeys")]
         public async Task<ActionResult<List<TACTKey>>> List()
         {
             var tactKeyList = new List<TACTKey>();

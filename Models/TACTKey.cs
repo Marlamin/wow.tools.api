@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace wow.tools.api.Models
 {
+    /// <summary>
+    /// A TACT key is used to encrypt game content. See https://wowdev.wiki/TACT#TACT_keys for more information.
+    /// </summary>
     public class TACTKey
     {
         /// <summary>
