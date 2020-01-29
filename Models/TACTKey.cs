@@ -7,7 +7,7 @@ namespace wow.tools.api.Models
 {
     public class TACTKey
     {
-        public uint ID { get; set; }
+        public int ID { get; set; }
         public string Lookup { get; set; }
         public string Key { get; set; }
         public string Description { get; set; }

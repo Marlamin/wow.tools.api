@@ -5,6 +5,7 @@ using System;
 using wow.tools.api.Models;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using System.Threading.Tasks;
 
 namespace wow.tools.api.Controllers
 {
@@ -13,25 +14,24 @@ namespace wow.tools.api.Controllers
     public class TACTKeysController : ControllerBase
     {
         [HttpGet("/tactkeys/list")]
-        public ActionResult<List<TACTKey>> List()
+        public async Task<ActionResult<List<TACTKey>>> List()
         {
             var tactKeyList = new List<TACTKey>();
 
             using(var connection = new MySqlConnection(SettingsManager.connectionString))
             {
-                connection.Open();
-                using (var cmd = connection.CreateCommand())
+                await connection.OpenAsync();
+                using (var cmd = new MySqlCommand("SELECT id, keyname, keybytes, description FROM wow_tactkey WHERE keybytes IS NOT NULL", connection))
+                using (var reader = await cmd.ExecuteReaderAsync())
                 {
-                    cmd.CommandText = "SELECT id, keyname, keybytes, description FROM wow_tactkey WHERE keybytes IS NOT NULL";
-                    var reader = cmd.ExecuteReader();
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         tactKeyList.Add(new TACTKey()
                         {
-                            ID = Convert.ToUInt32(reader["id"]),
-                            Lookup = reader["keyname"].ToString(),
-                            Key = reader["keybytes"].ToString(),
-                            Description = reader["description"].ToString()
+                            ID = reader.GetInt32(0),
+                            Lookup = reader.GetString(1),
+                            Key = reader.GetString(2),
+                            Description = reader.GetString(3),
                         });
                     }
                 }
