@@ -11,7 +11,7 @@ namespace wow.tools.api.Controllers
     public class DatabasesController : ControllerBase
     {
         [HttpGet("")]
-        public ActionResult<Database> List() => throw new NotImplementedException();
+        public ActionResult<List<Database>> List() => throw new NotImplementedException();
 
         [HttpGet("{buildConfig}")]
         public ActionResult<Database> ListForBuild(string buildConfig) => throw new NotImplementedException();
