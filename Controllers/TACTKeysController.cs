@@ -42,5 +42,11 @@ namespace wow.tools.api.Controllers
 
             return tactKeyList;
         }
+
+        /// <summary>
+        /// Lists fileDataIDs that have been/are encrypted by a given TACTKey.
+        /// </summary>
+        [HttpGet("{tactKeyID}/files")]
+        public ActionResult<List<int>> EncryptedFilesByKeyID(int tactKeyID) => throw new NotImplementedException();
     }
 }
