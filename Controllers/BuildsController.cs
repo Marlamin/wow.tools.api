@@ -1,7 +1,7 @@
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using wow.tools.api.Models;
 
 namespace wow.tools.api.Controllers
@@ -24,6 +24,9 @@ namespace wow.tools.api.Controllers
 
         [HttpGet("current")]
         public BuildsResponse Current() => throw new NotImplementedException();
+
+        [HttpGet("{build}")]
+        public async Task<Build> GetBuildByBuildConfig(string buildConfig) => throw new NotImplementedException();
 
         [HttpGet("{build}/files")]
         public BuildsResponse Files(string build) => throw new NotImplementedException();

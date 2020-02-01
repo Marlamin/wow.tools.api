@@ -2,7 +2,7 @@
 
 export interface File {
     fileDataID: number;
-    lookup?: number;
-    filename?: number;
+    lookup?: string;
+    filename?: string;
     isOfficialFilename: boolean;
 }

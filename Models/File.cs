@@ -13,12 +13,12 @@ namespace wow.tools.api.Models
         /// <summary>
         /// Hex representation of 8-byte lookup, if known.
         /// </summary>
-        public int? Lookup { get; set; }
+        public string? Lookup { get; set; }
 
         /// <summary>
         /// Filename of the file, if known.
         /// </summary>
-        public int? Filename { get; set; }
+        public string? Filename { get; set; }
 
         /// <summary>
         /// Whether or not the filename is official (true) or named by the community (false).

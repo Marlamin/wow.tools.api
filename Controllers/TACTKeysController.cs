@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-
-using System;
-using wow.tools.api.Models;
-using MySql.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using wow.tools.api.Models;
 
 namespace wow.tools.api.Controllers
 {
@@ -21,7 +19,7 @@ namespace wow.tools.api.Controllers
         {
             var tactKeyList = new List<TACTKey>();
 
-            using(var connection = new MySqlConnection(SettingsManager.connectionString))
+            using (var connection = new MySqlConnection(SettingsManager.connectionString))
             {
                 await connection.OpenAsync();
                 using (var cmd = new MySqlCommand("SELECT id, keyname, keybytes, description FROM wow_tactkey WHERE keybytes IS NOT NULL", connection))
