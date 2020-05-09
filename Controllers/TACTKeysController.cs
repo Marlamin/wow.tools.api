@@ -44,7 +44,28 @@ namespace wow.tools.api.Controllers
         /// <summary>
         /// Lists fileDataIDs that have been/are encrypted by a given TACTKey.
         /// </summary>
-        [HttpGet("{tactKeyID}/files")]
-        public ActionResult<List<int>> EncryptedFilesByKeyID(int tactKeyID) => throw new NotImplementedException();
+        [HttpGet("{lookup}/files")]
+        public async Task<ActionResult<List<int>>> EncryptedFilesByKeyLookup(string lookup)
+        {
+            var fileList = new List<int>();
+
+            using (var connection = new MySqlConnection(SettingsManager.connectionString))
+            {
+                await connection.OpenAsync();
+                using (var cmd = new MySqlCommand("SELECT filedataid FROM wow_encrypted WHERE keyname = @lookup", connection))
+                {
+                    cmd.Parameters.AddWithValue("lookup", lookup);
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            fileList.Add(reader.GetInt32(0));
+                        }
+                    }
+                }
+            }
+
+            return fileList;
+        }
     }
 }
