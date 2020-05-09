@@ -29,7 +29,7 @@ namespace wow.tools.api.Controllers
                     {
                         tactKeyList.Add(new TACTKey()
                         {
-                            ID = reader.GetInt32(0),
+                            ID = reader["id"] != DBNull.Value ? (int?)reader.GetInt32(0) : null,
                             Lookup = reader.GetString(1),
                             Key = reader.GetString(2),
                             Description = reader.GetString(3),

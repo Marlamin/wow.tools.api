@@ -13,7 +13,7 @@ namespace wow.tools.api.Models
         /// <summary>
         /// ID from TactKey.db2.
         /// </summary>
-        public int ID { get; set; }
+        public int? ID { get; set; }
 
         /// <summary>
         /// Hex representation of 8-byte lookup from TactKeyLookup.db2.

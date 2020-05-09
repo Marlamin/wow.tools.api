@@ -29,7 +29,10 @@ namespace wow.tools.api.Controllers
         public async Task<Build> GetBuildByBuildConfig(string buildConfig) => throw new NotImplementedException();
 
         [HttpGet("{build}/files")]
-        public BuildsResponse Files(string build) => throw new NotImplementedException();
+        public List<uint> Files(string build, string includeTypes = "")
+        {
+            return new List<uint>();
+        }
 
         [HttpGet("{build}/databases")]
         public BuildsResponse Databases(string build) => throw new NotImplementedException();
