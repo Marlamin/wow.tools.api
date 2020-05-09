@@ -14,8 +14,13 @@ namespace wow.tools.api.Controllers
         [HttpGet("")]
         public ActionResult<List<File>> List() => throw new NotImplementedException();
 
+        /// <summary>
+        /// Lists details for a specific FileDataID.
+        /// </summary>
+        /// <response code="200">Returns details for this file</response>
+        /// <response code="404">If the FileDataID is unknown</response>        
         [HttpGet("{fileDataID}")]
-        public async Task<File> ByFileDataID(int fileDataID)
+        public async Task<ActionResult<File>> ByFileDataID(int fileDataID)
         {
             var file = new File();
             using (var connection = new MySqlConnection(SettingsManager.connectionString))
@@ -24,6 +29,12 @@ namespace wow.tools.api.Controllers
                 using var cmd = new MySqlCommand("SELECT id, lookup, filename, verified FROM wow_rootfiles WHERE id = @id", connection);
                 cmd.Parameters.AddWithValue("id", fileDataID);
                 using var reader = await cmd.ExecuteReaderAsync();
+
+                if (!reader.HasRows)
+                {
+                    return NotFound();
+                }
+
                 while (await reader.ReadAsync())
                 {
                     file.FileDataID = reader.GetInt32(0);
@@ -36,6 +47,11 @@ namespace wow.tools.api.Controllers
             return file;
         }
 
+        /// <summary>
+        /// Lists known versions for a specific FileDataID.
+        /// </summary>
+        /// <response code="200">Returns versions for this file</response>
+        /// <response code="404">If the FileDataID is unknown or was never shipped (has no versions)</response>    
         [HttpGet("{fileDataID}/versions")]
         public async Task<ActionResult<List<FileVersion>>> ListVersions(int fileDataID)
         {
@@ -46,6 +62,12 @@ namespace wow.tools.api.Controllers
                 using var cmd = new MySqlCommand("SELECT wow_buildconfig.hash, contenthash FROM wow_rootfiles_chashes INNER JOIN wow_buildconfig ON wow_buildconfig.root_cdn=wow_rootfiles_chashes.root_cdn WHERE filedataid = @id", connection);
                 cmd.Parameters.AddWithValue("id", fileDataID);
                 using var reader = await cmd.ExecuteReaderAsync();
+
+                if (!reader.HasRows)
+                {
+                    return NotFound();
+                }
+
                 while (await reader.ReadAsync())
                 {
                     fileVersions.Add(new FileVersion()
