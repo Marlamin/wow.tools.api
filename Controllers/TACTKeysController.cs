@@ -31,8 +31,8 @@ namespace wow.tools.api.Controllers
                         {
                             ID = reader["id"] != DBNull.Value ? (int?)reader.GetInt32(0) : null,
                             Lookup = reader.GetString(1),
-                            Key = reader.GetString(2),
-                            Description = reader.GetString(3),
+                            Key = reader["keybytes"] != DBNull.Value ? reader.GetString(2) : "",
+                            Description = reader["description"] != DBNull.Value ? reader.GetString(3) : "",
                         });
                     }
                 }
