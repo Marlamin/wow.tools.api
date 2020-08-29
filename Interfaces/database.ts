@@ -1,7 +1,6 @@
 ﻿/* Auto Generated */
 
-import { File } from "./file";
-
-export interface Database extends File {
+export interface Database {
     name: string;
+    displayName: string;
 }

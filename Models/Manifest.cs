@@ -15,9 +15,8 @@ namespace wow.tools.api.Models
             size,
         }
 
-        internal ManifestType type;
-        public string contentHash;
-
-        public string encodingHash;
+        //internal ManifestType type;
+        //public string contentHash;
+        //public string encodingHash;
     }
 }

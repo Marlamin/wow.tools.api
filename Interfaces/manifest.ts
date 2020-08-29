@@ -7,7 +7,4 @@ export enum Manifest {
     root,
     download,
     size,
-    internal,
-    string,
-    string,
 }
