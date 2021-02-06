@@ -13,6 +13,8 @@ namespace wow.tools.api
 {
     public class Startup
     {
+        readonly string wtOrigins = "_wtOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -24,7 +26,16 @@ namespace wow.tools.api
         {
             // Force lowercase routes
             services.AddRouting(options => options.LowercaseUrls = true);
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: wtOrigins,
+                    builder =>
+                    {
+                        builder.WithOrigins("https://wow.tools");
+                        builder.WithOrigins("http://wow.tools.localhost");
+                    });
+            });
 
             services.AddSwaggerGen(c =>
             {
@@ -55,6 +66,7 @@ namespace wow.tools.api
                 app.UseHsts();
             }
 
+            app.UseCors(wtOrigins);
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseMiddleware(typeof(ErrorHandlingMiddleware));

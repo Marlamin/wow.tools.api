@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MySqlConnector;
 using wow.tools.api.Models;
 
 namespace wow.tools.api.Controllers
@@ -26,7 +26,7 @@ namespace wow.tools.api.Controllers
             using (var connection = new MySqlConnection(SettingsManager.connectionString))
             {
                 await connection.OpenAsync();
-                using var cmd = new MySqlCommand("SELECT id, lookup, filename, verified FROM wow_rootfiles WHERE id = @id", connection);
+                using var cmd = new MySqlCommand("SELECT id, lookup, filename, type, verified FROM wow_rootfiles WHERE id = @id", connection);
                 cmd.Parameters.AddWithValue("id", fileDataID);
                 using var reader = await cmd.ExecuteReaderAsync();
 
@@ -40,7 +40,8 @@ namespace wow.tools.api.Controllers
                     file.FileDataID = reader.GetInt32(0);
                     file.Lookup = reader["lookup"] != DBNull.Value ? reader.GetString(1) : null;
                     file.Filename = reader["filename"] != DBNull.Value ? reader.GetString(2) : null;
-                    file.IsOfficialFilename = reader.GetBoolean(3);
+                    file.Type = reader["type"] != DBNull.Value ? reader.GetString(3) : null;
+                    file.IsOfficialFilename = reader.GetBoolean(4);
                 }
             }
 
@@ -80,14 +81,5 @@ namespace wow.tools.api.Controllers
 
             return fileVersions;
         }
-
-        [HttpGet("download/build/{buildConfig}/{fileDataId}")]
-        public IActionResult DownloadByFileDataId(int fileDataID, string buildConfig) => throw new NotImplementedException();
-
-        [HttpGet("download/name/{buildConfig}/{fileName}")]
-        public IActionResult DownloadByFileName(string fileName, string buildConfig) => throw new NotImplementedException();
-
-        [HttpGet("download/content_hash/{contentHash}")]
-        public IActionResult DownloadByContentHash(string contentHash) => throw new NotImplementedException();
     }
 }

@@ -21,6 +21,11 @@ namespace wow.tools.api.Models
         public string? Filename { get; set; }
 
         /// <summary>
+        /// Type of the file, if known.
+        /// </summary>
+        public string? Type { get; set; }
+
+        /// <summary>
         /// Whether or not the filename is official (true) or named by the community (false).
         /// </summary>
         public bool IsOfficialFilename { get; set; }

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using wow.tools.api.Models;
 
 namespace wow.tools.api.Controllers
@@ -16,7 +16,7 @@ namespace wow.tools.api.Controllers
         {
             await using var connection = new MySqlConnection(SettingsManager.connectionString);
             await connection.OpenAsync();
-            await using var cmd = new MySqlCommand("SELECT displayName, name FROM wow_dbc_tables", connection);
+            await using var cmd = new MySqlCommand("SELECT displayName, name FROM wow_dbc_tables ORDER BY name ASC", connection);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             if (!reader.HasRows)
@@ -34,14 +34,6 @@ namespace wow.tools.api.Controllers
             }
 
             return dbList;
-        }
-
-        [HttpGet("{buildConfig:length(32)}"), ]
-        public async Task<ActionResult<List<Database>>> ListForBuildConfig(string buildConfig)
-        {
-            // TODO: Map buildconfig to build
-            // return await ListForBuild(build);
-            throw new NotImplementedException();
         }
 
         [HttpGet("{build}")]
@@ -62,7 +54,7 @@ namespace wow.tools.api.Controllers
             var versionID = versionReader.GetInt32(0);
             await versionReader.CloseAsync();
             
-            await using var cmd = new MySqlCommand("SELECT displayName, name FROM wow_dbc_tables WHERE ID in (SELECT tableid FROM wow_dbc_table_versions WHERE versionid = @versionid)", connection);
+            await using var cmd = new MySqlCommand("SELECT displayName, name FROM wow_dbc_tables WHERE ID in (SELECT tableid FROM wow_dbc_table_versions WHERE versionid = @versionid) ORDER BY name ASC", connection);
             cmd.Parameters.AddWithValue("versionid", versionID);
             await using var reader = await cmd.ExecuteReaderAsync();
 
@@ -101,7 +93,7 @@ namespace wow.tools.api.Controllers
             var tableID = tableReader.GetInt32(0);
             await tableReader.CloseAsync();
 
-            var queryString = "SELECT version FROM wow_builds INNER JOIN wow_dbc_table_versions ON wow_dbc_table_versions.versionid=wow_builds.id WHERE tableid = @tableid";
+            var queryString = "SELECT version FROM wow_builds INNER JOIN wow_dbc_table_versions ON wow_dbc_table_versions.versionid=wow_builds.id WHERE tableid = @tableid AND wow_dbc_table_versions.hasDefinition = 1";
 
             if(uniqueOnly)
                 queryString += " GROUP BY contenthash";

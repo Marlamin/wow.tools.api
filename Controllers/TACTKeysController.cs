@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MySqlConnector;
 using wow.tools.api.Models;
 
 namespace wow.tools.api.Controllers
