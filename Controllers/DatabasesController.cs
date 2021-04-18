@@ -115,6 +115,33 @@ namespace wow.tools.api.Controllers
             return versionList;
         }
 
+        [HttpGet("{databaseName}/hotfixes")]
+        public async Task<ActionResult<Dictionary<uint, uint>>> HotfixedRowsForDatabase(string databaseName, int build)
+        {
+            await using var connection = new MySqlConnection(SettingsManager.connectionString);
+            await connection.OpenAsync();
+
+            await using var command = new MySqlCommand("SELECT recordID, pushID FROM wow_hotfixes WHERE tableName = @name AND build = @build AND isValid = 1 ORDER BY pushID DESC", connection);
+            command.Parameters.AddWithValue("name", databaseName);
+            command.Parameters.AddWithValue("build", build);
+            await using var reader = await command.ExecuteReaderAsync();
+
+            var hotfixedIDList = new Dictionary<uint, uint>();
+            if (!reader.HasRows)
+                return hotfixedIDList;
+
+            while (await reader.ReadAsync())
+            {
+                var recordID = reader.GetUInt32(0);
+                var pushID = reader.GetUInt32(1);
+                if (!hotfixedIDList.ContainsKey(recordID))
+                {
+                    hotfixedIDList.Add(recordID, pushID);
+                }
+            }
+            return hotfixedIDList;
+        }
+
         [HttpGet("{buildConfig}/{databaseName}/json")]
         public ActionResult<Database> GetAsJSONForBuild(string buildConfig, string databaseName) => throw new NotImplementedException();
 
