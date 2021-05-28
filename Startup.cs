@@ -67,7 +67,7 @@ namespace wow.tools.api
             }
 
             app.UseCors(wtOrigins);
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseRouting();
             app.UseMiddleware(typeof(ErrorHandlingMiddleware));
 
