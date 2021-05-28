@@ -19,4 +19,4 @@ RUN dotnet publish "wow.tools.api.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "wow.tools.api.dll"]
+ENTRYPOINT ["dotnet", "wow.tools.api.dll", "--urls", "http://0.0.0.0:80"]
