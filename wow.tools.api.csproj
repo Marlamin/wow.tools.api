@@ -24,9 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="WoWTools.SpellDescParser">
-      <HintPath>..\DBCDumpHost\WoWTools.SpellDescParser\bin\Debug\net5.0\WoWTools.SpellDescParser.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DBCDumpHost\WoWTools.SpellDescParser\WoWTools.SpellDescParser.csproj" />
   </ItemGroup>
 
   <Target Name="GenerateTypeScriptInterfaces" BeforeTargets="PrepareForBuild">

@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using wow.tools.api.Utils;
+using WoWTools.SpellDescParser;
 
 namespace wow.tools.api.Controllers
 {
@@ -215,7 +217,6 @@ namespace wow.tools.api.Controllers
 
             if (!result.HasSparse)
             {
-
                 using (var query = new SQLiteCommand("SELECT * FROM ItemSearchName WHERE ID = :id"))
                 {
                     query.Connection = db;
@@ -300,68 +301,106 @@ namespace wow.tools.api.Controllers
             // If difficulty is -1 fall back to Normal
 
             var result = new TTSpell();
-            //result.SpellID = spellID;
+            result.SpellID = spellID;
 
-            //var spellNameDB = await dbcManager.GetOrLoad("SpellName", build);
-            //if (spellNameDB.TryGetValue(spellID, out DBCDRow spellNameRow))
-            //{
-            //    var spellName = (string)spellNameRow["Name_lang"];
-            //    if (!string.IsNullOrWhiteSpace(spellName))
-            //    {
-            //        result.Name = spellName;
-            //    }
-            //}
+            using (var query = new SQLiteCommand("SELECT Name_lang FROM SpellName WHERE ID = :id"))
+            {
+                query.Connection = db;
+                query.Parameters.AddWithValue(":id", spellID);
+                await query.ExecuteNonQueryAsync();
 
-            //var spellDB = await dbcManager.GetOrLoad("Spell", build);
-            //if (spellDB.TryGetValue(spellID, out var spellRow))
-            //{
-            //    var dataSupplier = new SpellDataSupplier(dbcManager, build, level, difficulty, mapID);
+                var reader = await query.ExecuteReaderAsync();
+                if (!reader.HasRows)
+                    return NotFound();
 
-            //    if ((string)spellRow["Description_lang"] != string.Empty)
-            //    {
-            //        var spellDescParser = new SpellDescParser((string)spellRow["Description_lang"]);
-            //        spellDescParser.Parse();
+                while (reader.Read())
+                {
+                    result.Name = reader.GetString(0);
+                }
+            }
 
-            //        var sb = new StringBuilder();
-            //        spellDescParser.root.Format(sb, spellID, dataSupplier);
+            using (var query = new SQLiteCommand("SELECT * FROM Spell WHERE ID = :id"))
+            {
+                query.Connection = db;
+                query.Parameters.AddWithValue(":id", spellID);
+                await query.ExecuteNonQueryAsync();
 
-            //        result.Description = sb.ToString();
+                var reader = await query.ExecuteReaderAsync();
+                if (!reader.HasRows)
+                    return NotFound();
 
-            //        // Check for PropertyType.SpellDescription nodes and feed those into separate parsers (make sure to add a recursion limit :) )
-            //        foreach (var node in spellDescParser.root.nodes)
-            //        {
-            //            if (node is Property property && property.propertyType == PropertyType.SpellDescription && property.overrideSpellID != null)
-            //            {
-            //                if (spellDB.TryGetValue((int)property.overrideSpellID, out var externalSpellRow))
-            //                {
-            //                    var externalSpellDescParser = new SpellDescParser((string)externalSpellRow["Description_lang"]);
-            //                    externalSpellDescParser.Parse();
+                while (reader.Read())
+                {
+                    var dataSupplier = new SpellDataSupplier(build, level, difficulty, mapID);
 
-            //                    var externalSB = new StringBuilder();
-            //                    externalSpellDescParser.root.Format(externalSB, (int)property.overrideSpellID, dataSupplier);
+                    var descLang = reader.GetString(reader.GetOrdinal("Description_lang"));
 
-            //                    result.Description = result.Description.Replace("$@spelldesc" + property.overrideSpellID, externalSB.ToString());
-            //                }
-            //            }
-            //        }
-            //    }
+                    if (descLang != string.Empty)
+                    {
+                        var spellDescParser = new SpellDescParser(descLang);
+                        spellDescParser.Parse();
 
-            //    if ((string)spellRow["NameSubtext_lang"] != string.Empty)
-            //    {
-            //        result.SubText = (string)spellRow["NameSubtext_lang"];
-            //    }
-            //}
+                        var sb = new StringBuilder();
+                        spellDescParser.root.Format(sb, spellID, dataSupplier);
 
-            //var spellMiscRow = dbcManager.FindRecords("spellMisc", build, "SpellID", spellID, true).Result;
-            //if (spellMiscRow.Count == 0)
-            //{
-            //    result.IconFileDataID = 134400;
-            //}
-            //else
-            //{
-            //    result.IconFileDataID = (int)spellMiscRow[0]["SpellIconFileDataID"];
-            //}
+                        result.Description = sb.ToString();
 
+                        // Check for PropertyType.SpellDescription nodes and feed those into separate parsers (make sure to add a recursion limit :) )
+                        foreach (var node in spellDescParser.root.nodes)
+                        {
+                            if (node is Property property && property.propertyType == PropertyType.SpellDescription && property.overrideSpellID != null)
+                            {
+                                using (var subQuery = new SQLiteCommand("SELECT * FROM Spell WHERE ID = :id"))
+                                {
+                                    subQuery.Connection = db;
+                                    subQuery.Parameters.AddWithValue(":id", property.overrideSpellID);
+                                    await subQuery.ExecuteNonQueryAsync();
+
+                                    var subReader = await subQuery.ExecuteReaderAsync();
+                                    if (subReader.HasRows)
+                                    {
+                                        var externalSpellDescParser = new SpellDescParser(subReader.GetString(subReader.GetOrdinal("Description_lang")));
+                                        externalSpellDescParser.Parse();
+
+                                        var externalSB = new StringBuilder();
+                                        externalSpellDescParser.root.Format(externalSB, (int)property.overrideSpellID, dataSupplier);
+
+                                        result.Description = result.Description.Replace("$@spelldesc" + property.overrideSpellID, externalSB.ToString());
+                                    }
+                                    else
+                                    {
+                                        result.Description = "ERROR: Spell description for override spell " + property.overrideSpellID + " was not found!";
+                                    }
+                                }
+                            }
+                        }
+
+                        var nameSubtext = reader.GetString(reader.GetOrdinal("NameSubtext_lang"));
+
+                        if (nameSubtext != string.Empty)
+                        {
+                            result.SubText = nameSubtext;
+                        }
+                    }
+                }
+            }
+
+            using (var query = new SQLiteCommand("SELECT SpellIconFileDataID FROM SpellMisc WHERE SpellID = :id"))
+            {
+                query.Connection = db;
+                query.Parameters.AddWithValue(":id", spellID);
+                await query.ExecuteNonQueryAsync();
+
+                var reader = await query.ExecuteReaderAsync();
+                if (!reader.HasRows)
+                    result.IconFileDataID = 134400;
+
+                while (reader.Read())
+                {
+                    result.IconFileDataID = reader.GetInt32(0);
+                }
+            }
+            
             return Ok(result);
         }
     }

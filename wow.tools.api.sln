@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "wow.tools.api", "wow.tools.api.csproj", "{9ED887C5-4AA3-4662-891F-54EF9A2E5F20}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WoWTools.SpellDescParser", "..\DBCDumpHost\WoWTools.SpellDescParser\WoWTools.SpellDescParser.csproj", "{5C20595C-869D-45A5-AF0C-96459A208C37}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{9ED887C5-4AA3-4662-891F-54EF9A2E5F20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9ED887C5-4AA3-4662-891F-54EF9A2E5F20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9ED887C5-4AA3-4662-891F-54EF9A2E5F20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C20595C-869D-45A5-AF0C-96459A208C37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C20595C-869D-45A5-AF0C-96459A208C37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C20595C-869D-45A5-AF0C-96459A208C37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C20595C-869D-45A5-AF0C-96459A208C37}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
