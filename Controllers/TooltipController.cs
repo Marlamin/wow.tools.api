@@ -238,6 +238,46 @@ namespace wow.tools.api.Controllers
                 }
             }
 
+            using (var query = new SQLiteCommand("SELECT ItemEffectID FROM ItemXItemEffect WHERE ItemID = :id"))
+            {
+                query.Connection = db;
+                query.Parameters.AddWithValue(":id", itemID);
+                await query.ExecuteNonQueryAsync();
+
+                var reader = await query.ExecuteReaderAsync();
+
+                var itemEffects = new List<TTItemEffect>();
+
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        var itemEffectID = reader.GetInt32(reader.GetOrdinal("ItemEffectID"));
+                        using (var subquery = new SQLiteCommand("SELECT * FROM ItemEffect WHERE ID = :id"))
+                        {
+                            subquery.Connection = db;
+                            subquery.Parameters.AddWithValue(":id", itemEffectID);
+                            await subquery.ExecuteNonQueryAsync();
+
+                            var subreader = await subquery.ExecuteReaderAsync();
+
+                            if (subreader.HasRows)
+                            {
+                                while (subreader.Read())
+                                {
+                                    var triggerType = subreader.GetInt32(subreader.GetOrdinal("TriggerType"));
+                                    var spellID = subreader.GetInt32(subreader.GetOrdinal("SpellID"));
+
+                                    itemEffects.Add(new TTItemEffect() { Spell = new TTSpell() { SpellID = spellID, Description = "Loading.." }, TriggerType = triggerType });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                result.ItemEffects = itemEffects.ToArray();
+            }
+
             /* Fixups */
             // Classic ExpansionID column has 254, make 0. ¯\_(ツ)_/¯
             if (result.ExpansionID == 254)
