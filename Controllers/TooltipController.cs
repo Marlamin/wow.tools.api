@@ -138,7 +138,7 @@ namespace wow.tools.api.Controllers
 
                     if (statTypes.Count > 0 && statTypes.Any(x => x != -1) && statTypes.Any(x => x != 0))
                     {
-                        var (RandomPropField, RandomPropIndex) = TooltipUtils.GetRandomPropertyByInventoryType(result.OverallQualityID, result.InventoryType, result.SubClassID, build);
+                        var (RandomPropField, RandomPropIndex) = TooltipUtils.GetRandomPropertyByInventoryType(result.OverallQualityID, result.InventoryType, result.SubClassID);
 
                         using var rpropQuery = new SQLiteCommand("SELECT " + RandomPropField + "F_" + RandomPropIndex + " FROM RandPropPoints WHERE ID = :id");
                         rpropQuery.Connection = db;
@@ -336,7 +336,7 @@ namespace wow.tools.api.Controllers
         }
 
         [HttpGet("spell/{SpellID}")]
-        public async Task<IActionResult> GetSpellTooltip(int spellID, string build, byte level = 60, sbyte difficulty = -1, short mapID = -1)
+        public async Task<IActionResult> GetSpellTooltip(int spellID, string build, byte level = 60, sbyte difficulty = -1, short mapID = -1, uint itemID = 0)
         {
             // If difficulty is -1 fall back to Normal
 
@@ -371,7 +371,7 @@ namespace wow.tools.api.Controllers
 
                 while (reader.Read())
                 {
-                    var dataSupplier = new SpellDataSupplier(build, level, difficulty, mapID);
+                    var dataSupplier = new SpellDataSupplier(build, level, difficulty, mapID, itemID);
 
                     var descLang = reader.GetString(reader.GetOrdinal("Description_lang"));
 

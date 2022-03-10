@@ -228,7 +228,7 @@ namespace wow.tools.api.Utils
             }
         }
 
-        public static (string TargetField, sbyte TargetIndex) GetRandomPropertyByInventoryType(int overallQualityID, int inventoryTypeID, int subClassID, string build)
+        public static (string TargetField, sbyte TargetIndex) GetRandomPropertyByInventoryType(int overallQualityID, int inventoryTypeID, int subClassID)
         {
             var inventoryType = (InventoryType)inventoryTypeID;
 
