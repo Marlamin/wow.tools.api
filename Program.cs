@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Data.SQLite;
+using System.IO;
 
 namespace wow.tools.api
 {
@@ -11,6 +12,10 @@ namespace wow.tools.api
 
         public static void Main(string[] args)
         {
+            if (!File.Exists("export.db3"))
+            {
+                throw new FileNotFoundException("export.db3 not found");
+            }
             SQLiteConnection cnnIn = new SQLiteConnection("Data Source=export.db3;foreign keys=True;Version=3;Read Only=True;");
             cnnIn.Open();
             cnnOut.Open();

@@ -373,6 +373,7 @@ namespace wow.tools.api.Controllers
                 {
                     var dataSupplier = new SpellDataSupplier(build, level, difficulty, mapID, itemID);
 
+                    var nameSubtext = reader.GetString(reader.GetOrdinal("NameSubtext_lang"));
                     var descLang = reader.GetString(reader.GetOrdinal("Description_lang"));
 
                     if (descLang != string.Empty)
@@ -399,13 +400,16 @@ namespace wow.tools.api.Controllers
                                     var subReader = await subQuery.ExecuteReaderAsync();
                                     if (subReader.HasRows)
                                     {
-                                        var externalSpellDescParser = new SpellDescParser(subReader.GetString(subReader.GetOrdinal("Description_lang")));
-                                        externalSpellDescParser.Parse();
+                                        while (subReader.Read())
+                                        {
+                                            var externalSpellDescParser = new SpellDescParser(subReader.GetString(subReader.GetOrdinal("Description_lang")));
+                                            externalSpellDescParser.Parse();
 
-                                        var externalSB = new StringBuilder();
-                                        externalSpellDescParser.root.Format(externalSB, (int)property.overrideSpellID, dataSupplier);
+                                            var externalSB = new StringBuilder();
+                                            externalSpellDescParser.root.Format(externalSB, (int)property.overrideSpellID, dataSupplier);
 
-                                        result.Description = result.Description.Replace("$@spelldesc" + property.overrideSpellID, externalSB.ToString());
+                                            result.Description = result.Description.Replace("$@spelldesc" + property.overrideSpellID, externalSB.ToString());
+                                        }
                                     }
                                     else
                                     {
@@ -415,7 +419,6 @@ namespace wow.tools.api.Controllers
                             }
                         }
 
-                        var nameSubtext = reader.GetString(reader.GetOrdinal("NameSubtext_lang"));
 
                         if (nameSubtext != string.Empty)
                         {

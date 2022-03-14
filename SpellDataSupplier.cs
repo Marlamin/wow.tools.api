@@ -267,7 +267,7 @@ namespace wow.tools.api
                     rquery.Parameters.AddWithValue(":id", spellRadiusID);
                     rquery.ExecuteNonQuery();
 
-                    var rreader = query.ExecuteReader();
+                    var rreader = rquery.ExecuteReader();
                     if (!rreader.HasRows)
                         return 0;
 
