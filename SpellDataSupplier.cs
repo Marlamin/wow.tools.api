@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
 using wow.tools.api.Utils;
@@ -28,6 +29,8 @@ namespace wow.tools.api
         // Stat/Effect Point parsing based on work done by simc & https://github.com/TrinityCore/SpellWork 
         public double? SupplyEffectPoint(int spellID, uint? effectIndex)
         {
+            var points = 0.0f;
+
             using (var query = new SQLiteCommand("SELECT * FROM SpellEffect WHERE SpellID = :id AND EffectIndex = :effectIndex"))
             {
                 query.Connection = db;
@@ -37,11 +40,10 @@ namespace wow.tools.api
 
                 var reader = query.ExecuteReader();
                 if (!reader.HasRows)
-                    return 0.0f;
+                    return points;
 
                 while (reader.Read())
                 {
-
                     var effectPoints = reader.GetFloat(reader.GetOrdinal("EffectBasePointsF"));
                     var spellAttributes = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
  
@@ -75,68 +77,47 @@ namespace wow.tools.api
                         // TODO: Not yet implemented
 
                         //SpellScaling? ItemLevel based scaling?
+                        // TODO ScalingClass -1, -2, -3, -4, -5, -6, -7, -8, -9
 
+                        // -6 - Sta
+                        // 07 RandProp P
+                        // -8 RandProp DamageReplaceStatF 
+                        // -9 RandProp DamageReplaceStatF
                         // ItemLevel based scaling
-                        if(scalingClass == -7)
+                        if (itemID == 0)
+                            return effectPoints;
+
+                        var itemLevel = 0;
+                        var itemSlot = 0;
+                        var itemQuality = 0;
+
+                        using (var subquery = new SQLiteCommand("SELECT ItemLevel, InventoryType, OverallQualityID FROM ItemSparse WHERE ID = :id"))
                         {
-                            if (itemID == 0)
+                            subquery.Connection = db;
+                            subquery.Parameters.AddWithValue(":id", itemID);
+                            subquery.ExecuteNonQuery();
+
+                            var subreader = subquery.ExecuteReader();
+                            if (!subreader.HasRows)
                                 return effectPoints;
 
-                            var itemLevel = 0;
-                            var itemSlot = 0;
-                            var itemQuality = 0;
-
-                            using (var subquery = new SQLiteCommand("SELECT ItemLevel, InventoryType, OverallQualityID FROM ItemSparse WHERE ID = :id"))
+                            while (subreader.Read())
                             {
-                                subquery.Connection = db;
-                                subquery.Parameters.AddWithValue(":id", itemID);
-                                subquery.ExecuteNonQuery();
-
-                                var subreader = subquery.ExecuteReader();
-                                if (!subreader.HasRows)
-                                    return effectPoints;
-
-                                while (subreader.Read())
-                                {
-                                    itemLevel = subreader.GetInt32(subreader.GetOrdinal("ItemLevel"));
-                                    itemSlot = subreader.GetInt32(subreader.GetOrdinal("InventoryType"));
-                                    itemQuality = subreader.GetInt32(subreader.GetOrdinal("OverallQualityID"));
-                                }
+                                itemLevel = subreader.GetInt32(subreader.GetOrdinal("ItemLevel"));
+                                itemSlot = subreader.GetInt32(subreader.GetOrdinal("InventoryType"));
+                                itemQuality = subreader.GetInt32(subreader.GetOrdinal("OverallQualityID"));
                             }
-                                             
-                            // -1 or not? 
-                            var multiplierRow = GameTableProvider.GetCombatRatingsMultByILVLRow(itemLevel - 1, build);
+                        }
 
-                            double multiplier;
-                            switch ((TooltipUtils.InventoryType)itemSlot)
-                            {
-                                case TooltipUtils.InventoryType.Neck:
-                                case TooltipUtils.InventoryType.Finger:
-                                    multiplier = multiplierRow.JewelryMultiplier;
-                                    break;
-                                case TooltipUtils.InventoryType.Trinket:
-                                    multiplier = multiplierRow.TrinketMultiplier;
-                                    break;
-                                case TooltipUtils.InventoryType.OneHand:
-                                case TooltipUtils.InventoryType.Shield:
-                                case TooltipUtils.InventoryType.Ranged:
-                                case TooltipUtils.InventoryType.TwoHand:
-                                case TooltipUtils.InventoryType.MainHand:
-                                case TooltipUtils.InventoryType.OffHand:
-                                case TooltipUtils.InventoryType.HeldInOffhand:
-                                case TooltipUtils.InventoryType.RangedRight:
-                                    multiplier = multiplierRow.WeaponMultiplier;
-                                    break;
-                                default:
-                                    multiplier = multiplierRow.ArmorMultiplier;
-                                    break;
-                            }
+                        var multiplier = GetItemMultiplier(itemSlot, itemLevel, build);
 
+                        if (scalingClass == -7)
+                        {
                             var (RandomPropField, RandomPropIndex) = TooltipUtils.GetRandomPropertyByInventoryType(itemQuality, itemSlot, 0);
 
                             using var rpropQuery = new SQLiteCommand("SELECT " + RandomPropField + "F_0" + " FROM RandPropPoints WHERE ID = :id");
                             rpropQuery.Connection = db;
-                            rpropQuery.Parameters.AddWithValue(":id", itemLevel);
+                            rpropQuery.Parameters.AddWithValue(":id", itemLevel - 1);
                             rpropQuery.ExecuteNonQuery();
 
                             var rpropReader = rpropQuery.ExecuteReader();
@@ -147,10 +128,33 @@ namespace wow.tools.api
                                 randProp = rpropReader.GetFloat(0);
                             }
 
-                            return (int)(randProp * multiplier * coefficient);
+                            points = (float)Math.Floor(randProp * multiplier);
+                        }
+                        else if(scalingClass == -8 || scalingClass == -9)
+                        {
+                            var randomPropField = "DamageReplaceF";
+                            if (scalingClass == -9)
+                            {
+                                randomPropField = "DamageSecondaryF";
+                            }
+
+                            using var rpropQuery = new SQLiteCommand("SELECT " + randomPropField + " FROM RandPropPoints WHERE ID = :id");
+                            rpropQuery.Connection = db;
+                            rpropQuery.Parameters.AddWithValue(":id", itemLevel - 1);
+                            rpropQuery.ExecuteNonQuery();
+
+                            var rpropReader = rpropQuery.ExecuteReader();
+                            float randProp = 0.0f;
+
+                            while (rpropReader.Read())
+                            {
+                                randProp = rpropReader.GetFloat(0);
+                            }
+
+                            points = (float)Math.Floor(randProp * multiplier);
                         }
 
-                        return effectPoints;
+                        return points * coefficient;
                     }
                     else
                     {
@@ -181,9 +185,39 @@ namespace wow.tools.api
                 }
             }
 
-            return 0.0f;
+            return points;
         }
 
+        private double GetItemMultiplier(int itemSlot, int itemLevel, string build){
+            var multiplierRow = GameTableProvider.GetCombatRatingsMultByILVLRow(itemLevel - 1, build);
+
+            double multiplier;
+            switch ((TooltipUtils.InventoryType)itemSlot)
+            {
+                case TooltipUtils.InventoryType.Neck:
+                case TooltipUtils.InventoryType.Finger:
+                    multiplier = multiplierRow.JewelryMultiplier;
+                    break;
+                case TooltipUtils.InventoryType.Trinket:
+                    multiplier = multiplierRow.TrinketMultiplier;
+                    break;
+                case TooltipUtils.InventoryType.OneHand:
+                case TooltipUtils.InventoryType.Shield:
+                case TooltipUtils.InventoryType.Ranged:
+                case TooltipUtils.InventoryType.TwoHand:
+                case TooltipUtils.InventoryType.MainHand:
+                case TooltipUtils.InventoryType.OffHand:
+                case TooltipUtils.InventoryType.HeldInOffhand:
+                case TooltipUtils.InventoryType.RangedRight:
+                    multiplier = multiplierRow.WeaponMultiplier;
+                    break;
+                default:
+                    multiplier = multiplierRow.ArmorMultiplier;
+                    break;
+            }
+
+            return multiplier;
+        }
         public double? SupplyRadius(int spellID, uint? effectIndex, int radiusIndex)
         {
             using (var query = new SQLiteCommand("SELECT EffectRadiusIndex_0, EffectRadiusIndex_1 FROM SpellEffect WHERE SpellID = :id AND EffectIndex = :effectIndex"))
