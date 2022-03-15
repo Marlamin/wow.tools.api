@@ -72,7 +72,7 @@ namespace wow.tools.api
 
                     var scalingClass = reader.GetInt32(reader.GetOrdinal("ScalingClass"));
 
-                    if (coefficient != 0.0f)
+                    if (coefficient >= 0.0f)
                     {
                         // TODO: Not yet implemented
 
@@ -80,7 +80,7 @@ namespace wow.tools.api
                         // TODO ScalingClass -1, -2, -3, -4, -5, -6, -7, -8, -9
 
                         // -6 - Sta
-                        // 07 RandProp P
+                        // -7 RandProp ?
                         // -8 RandProp DamageReplaceStatF 
                         // -9 RandProp DamageReplaceStatF
                         // ItemLevel based scaling
@@ -117,7 +117,7 @@ namespace wow.tools.api
 
                             using var rpropQuery = new SQLiteCommand("SELECT " + RandomPropField + "F_0" + " FROM RandPropPoints WHERE ID = :id");
                             rpropQuery.Connection = db;
-                            rpropQuery.Parameters.AddWithValue(":id", itemLevel - 1);
+                            rpropQuery.Parameters.AddWithValue(":id", itemLevel);
                             rpropQuery.ExecuteNonQuery();
 
                             var rpropReader = rpropQuery.ExecuteReader();
@@ -128,11 +128,11 @@ namespace wow.tools.api
                                 randProp = rpropReader.GetFloat(0);
                             }
 
-                            points = (float)Math.Floor(randProp * multiplier);
+                            points = randProp * (float)multiplier;
                         }
                         else if(scalingClass == -8 || scalingClass == -9)
                         {
-                            var randomPropField = "DamageReplaceF";
+                            var randomPropField = "DamageReplaceStatF";
                             if (scalingClass == -9)
                             {
                                 randomPropField = "DamageSecondaryF";
@@ -140,7 +140,7 @@ namespace wow.tools.api
 
                             using var rpropQuery = new SQLiteCommand("SELECT " + randomPropField + " FROM RandPropPoints WHERE ID = :id");
                             rpropQuery.Connection = db;
-                            rpropQuery.Parameters.AddWithValue(":id", itemLevel - 1);
+                            rpropQuery.Parameters.AddWithValue(":id", itemLevel);
                             rpropQuery.ExecuteNonQuery();
 
                             var rpropReader = rpropQuery.ExecuteReader();
@@ -151,7 +151,7 @@ namespace wow.tools.api
                                 randProp = rpropReader.GetFloat(0);
                             }
 
-                            points = (float)Math.Floor(randProp * multiplier);
+                            points = randProp;
                         }
 
                         return points * coefficient;
@@ -189,7 +189,7 @@ namespace wow.tools.api
         }
 
         private double GetItemMultiplier(int itemSlot, int itemLevel, string build){
-            var multiplierRow = GameTableProvider.GetCombatRatingsMultByILVLRow(itemLevel - 1, build);
+            var multiplierRow = GameTableProvider.GetCombatRatingsMultByILVLRow(itemLevel, build);
 
             double multiplier;
             switch ((TooltipUtils.InventoryType)itemSlot)
