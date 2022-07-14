@@ -98,7 +98,7 @@ namespace wow.tools.api.Controllers
             if(uniqueOnly)
                 queryString += " GROUP BY contenthash";
 
-            queryString += " ORDER BY version DESC";
+            queryString += " ORDER BY LENGTH(version), version DESC";
 
             await using var cmd = new MySqlCommand(queryString, connection);
             cmd.Parameters.AddWithValue("tableid", tableID);
