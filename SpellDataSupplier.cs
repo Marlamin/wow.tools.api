@@ -16,7 +16,7 @@ namespace wow.tools.api
         private sbyte expansion = -2;
         private uint itemID;
         
-        public SpellDataSupplier(string build, byte level = 60, sbyte difficulty = -1, short mapID = -1, uint itemID = 0)
+        public SpellDataSupplier(string build, byte level = 60, sbyte difficulty = 0, short mapID = -1, uint itemID = 0)
         {
             this.build = build;
             this.level = level;
@@ -31,11 +31,12 @@ namespace wow.tools.api
         {
             var points = 0.0f;
 
-            using (var query = new SQLiteCommand("SELECT * FROM SpellEffect WHERE SpellID = :id AND EffectIndex = :effectIndex"))
+            using (var query = new SQLiteCommand("SELECT * FROM SpellEffect WHERE SpellID = :id AND EffectIndex = :effectIndex AND DifficultyID = :difficulty"))
             {
                 query.Connection = db;
                 query.Parameters.AddWithValue(":id", spellID);
                 query.Parameters.AddWithValue(":effectIndex", effectIndex - 1);
+                query.Parameters.AddWithValue(":difficulty", difficulty);
                 query.ExecuteNonQuery();
 
                 var reader = query.ExecuteReader();
