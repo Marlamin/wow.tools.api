@@ -3,7 +3,7 @@ using System.IO;
 
 namespace wow.tools.api
 {
-    public class SettingsManager
+    public static class SettingsManager
     {
         public static string cacheDir;
         public static string connectionString;
