@@ -33,5 +33,11 @@ namespace System.IO
 
             return byteArray;
         }
+        public static byte[] ToByteArray(this string str)
+        {
+            str = str.Replace(" ", string.Empty);
+            return Convert.FromHexString(str);
+        }
     }
 }
+    

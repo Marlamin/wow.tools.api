@@ -108,5 +108,33 @@ namespace wow.tools.api
                     throw new Exception("Unsupported mode " + data[0].ToString("X") + "!");
             }
         }
+
+        public static byte[] DecryptFile(string name, byte[] data, string decryptionKeyName)
+        {
+            byte[] key;
+
+            if (!File.Exists(decryptionKeyName + ".ak"))
+            {
+                key = new byte[16];
+            }
+            else
+            {
+                using (BinaryReader reader = new BinaryReader(new FileStream(decryptionKeyName + ".ak", FileMode.Open)))
+                {
+                    key = reader.ReadBytes(16);
+                }
+            }
+
+            byte[] IV = name.ToByteArray();
+
+            Array.Copy(IV, 8, IV, 0, 8);
+            Array.Resize(ref IV, 8);
+
+            using (Salsa20 salsa = new Salsa20())
+            {
+                var decryptor = salsa.CreateDecryptor(key, IV);
+                return decryptor.TransformFinalBlock(data, 0, data.Length);
+            }
+        }
     }
 }

@@ -23,15 +23,23 @@ namespace wow.tools.api.Utils
             public string md5;
         }
 
-        public static async Task<RootFile> GetRoot(string hash, bool parseIt = false)
+        public static async Task<RootFile> GetRoot(string hash, bool parseIt = false, string cdnDir = "wow")
         {
             var root = new RootFile
             {
                 entriesLookup = new MultiDictionary<ulong, RootEntry>(),
                 entriesFDID = new MultiDictionary<uint, RootEntry>(),
             };
-            var rootPath = Path.Combine(SettingsManager.cacheDir, "tpr", "wow", "data", hash.Substring(0, 2), hash.Substring(2, 2), hash);
-            byte[] content = await File.ReadAllBytesAsync(rootPath);
+            var rootPath = Path.Combine(SettingsManager.cacheDir, "tpr", cdnDir, "data", hash.Substring(0, 2), hash.Substring(2, 2), hash);
+            byte[] content;
+            if (cdnDir == "wow")
+            {
+                content = await File.ReadAllBytesAsync(rootPath);
+            }
+            else
+            {
+                content = BLTE.DecryptFile(Path.GetFileNameWithoutExtension(rootPath), await File.ReadAllBytesAsync(rootPath), "wowdevalpha");
+            }
             if (!parseIt) return root;
 
             var newRoot = false;

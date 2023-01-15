@@ -114,9 +114,9 @@ namespace wow.tools.api.Controllers
 
         [HttpGet]
         [Route("diff_api")]
-        public async Task<ActionResult> DiffApi(string from, string to, int start = 0)
+        public async Task<ActionResult> DiffApi(string from, string to, int start = 0, string cdnDir = "wow")
         {
-            Console.WriteLine("Serving root diff for root " + from + " => " + to);
+            Console.WriteLine("Serving root diff for root " + from + " => " + to + " (" + cdnDir + ")");
 
             if (BuildDiffCache.Get(from, to, out ApiDiff diff))
             {
@@ -131,8 +131,8 @@ namespace wow.tools.api.Controllers
 
             var filedataids = await GetAllFiles();
 
-            var rootFrom = await GetRoot(from, true);
-            var rootTo = await GetRoot(to, true);
+            var rootFrom = await GetRoot(from, true, cdnDir);
+            var rootTo = await GetRoot(to, true, cdnDir);
 
             var rootFromEntries = rootFrom.entriesFDID;
             var rootToEntries = rootTo.entriesFDID;
