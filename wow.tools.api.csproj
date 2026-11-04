@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.OpenApi" Version="1.4.5" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
     <PackageReference Include="MTT" Version="0.6.3" />
-    <PackageReference Include="MysqlConnector" Version="2.2.2" />
+    <PackageReference Include="MysqlConnector" Version="2.6.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
